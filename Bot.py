@@ -5,6 +5,16 @@ import pymongo
 import lolapi
 import spotifyapi as spotify
 import spotifykeys
+from urllib.parse import urlparse
+
+
+def is_valid_link(link):
+    try:
+        result = urlparse(link)
+        return all([result.scheme, result.netloc])
+    except:
+        return False
+
 
 znani_users = []
 
@@ -265,12 +275,15 @@ class Bot(commands.Bot):
     @commands.cooldown(1, 5, commands.Bucket.user)
     async def add_to_que(self, ctx: commands.Context):
         if self.sr[ctx.channel.name]:
-            artist, title, track_id = spotify.find_song(ctx.message.content[4:], ctx.channel.name)
-            if any(x in f'{title} {artist}'.lower().split() for x in self.bannable):
-                await ctx.send("lewusMrozon NIE WYSYŁAJ TAKICH PIOSENEK RASISTO lewusMrozon")
+            if is_valid_link(ctx.message.content[4:]):
+                await ctx.send('podaj artyste i tytuł, a nie link (spotfiy only)')
             else:
-                spotify.add_to_que(artist, title, track_id, ctx.channel.name)
-                await self.send_msg(f"@{ctx.author.name} {artist} - {title} zostało dodane do kolejki", ctx)
+                artist, title, track_id = spotify.find_song(ctx.message.content[4:], ctx.channel.name)
+                if any(x in f'{title} {artist}'.lower().split() for x in self.bannable):
+                    await ctx.send("lewusMrozon NIE WYSYŁAJ TAKICH PIOSENEK RASISTO lewusMrozon")
+                else:
+                    spotify.add_to_que(artist, title, track_id, ctx.channel.name)
+                    await self.send_msg(f"@{ctx.author.name} {artist} - {title} zostało dodane do kolejki", ctx)
 
 
 bot = Bot()

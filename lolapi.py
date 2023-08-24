@@ -1,7 +1,7 @@
 import requests
 import json
 
-API_KEY = 'RGAPI-c340ae2e-fd5f-461a-9ad9-a23529286f31'
+API_KEY = 'RGAPI-0f6e36e1-e8bc-4d41-9c5c-0f489059223a'
 CHAMP_URL = 'http://ddragon.leagueoflegends.com/cdn/12.23.1/data/en_US/champion.json'
 champs = requests.get(CHAMP_URL).json()
 RUNES_URL = 'https://ddragon.leagueoflegends.com/cdn/12.23.1/data/en_US/runesReforged.json'
@@ -48,6 +48,7 @@ def get_players_from_live_game(channel):
             if name:
                 players_in_game.append([name, champion_name])
     return response.status_code, players_in_game
+
 
 def get_runes_ids(channel):
     url = f"https://api.lolpros.gg/lol/game?query={channel}"
@@ -122,6 +123,7 @@ def get_accounts(player):
             accounts.append(account['summoner_name'])
     return accounts
 
+
 def get_played(player):
     url = f'https://api.lolpros.gg/es/profiles/{player.lower()}'
     response = requests.get(url)
@@ -180,30 +182,6 @@ def make_info_json_file():
 
     with open('bootcamp_info.json', 'w', encoding='utf-8') as f:
         json.dump(players, f, indent=4)
-
-
-def get_players_ingame():
-    players_ingame = []
-    for player in players:
-        if check_if_in_game(player['id']):
-            players_ingame.append(player['nick'])
-    return players_ingame
-
-
-def get_most_stacked_game():
-    games = {}
-    for player in players:
-        url = f'https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{player["id"]}?api_key={API_KEY}'
-        response = requests.get(url)
-        if response.status_code == 200:
-            response = response.json()
-            pros = []
-            for participant in response['participants']:
-                if any(d['name'] == participant['summonerName'] for d in players):
-                    pros.append(player['nick'])
-            games[response['gameId']] = pros
-    keys = sorted(games, key=lambda k: len(games[k]), reverse=True)
-    return games[keys[0]]
 
 
 servers = {
@@ -265,7 +243,8 @@ def print_top_champs(champ_points):
             champs[name] = champ_points
     champs = sorted(champs.items(), key=lambda x: x[1], reverse=True)
     for x in range(20):
-        print(f'{x+1}. {champs[x][0]} - {champs[x][1]}')
+        print(f'{x + 1}. {champs[x][0]} - {champs[x][1]}')
+
 
 def rank_one(account_name):
     url = f'https://euw1.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5?api_key={API_KEY}'
@@ -283,4 +262,3 @@ def rank_one(account_name):
         if player['summonerName'] == account_name:
             return rank, rank1_points - player['leaguePoints']
     return 999999, 0
-
